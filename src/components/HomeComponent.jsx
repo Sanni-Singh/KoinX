@@ -9,6 +9,7 @@ const HomeComponent = ()=>{
     const [discount,setDiscount] = useState(0);
     const [newCapital,setNewCapital] = useState(0)
     const [taxToPay , setTaxToPay] = useState(0)
+    const [flag,setFlag] = useState(true)
 
     const purchaseRef = useRef()
     const expenceRef = useRef()
@@ -18,11 +19,38 @@ const HomeComponent = ()=>{
     
     
     const calculateFn = ()=>{
+        let taxVal = annualRef.current.value
         let val = Number(priceRef.current.value) - Number(purchaseRef.current.value) - Number(expenceRef.current.value)
+        let dis =val * (50 / 100);
         setCapital(pre => val)
-        setDiscount(pre => val * (50 / 100))
+        setDiscount(pre => dis)
+        setNewCapital(flag ? val - dis : val)
+        let newdis = flag ? val - dis : val;
+        let taxToPay;
+        if(taxVal === '1'){
+            taxToPay = 0
+        }
+        else if(taxVal === '18'){
+            taxToPay = 19/100 * (newdis)
+        }
+        else if(taxVal === '45'){
+            taxToPay = 32/100 * (newdis)
+        }
+        else if(taxVal === '120'){
+            taxToPay = 37/100 * (newdis)
+        }
+        else{
+            if(taxVal === undefined){
+                taxToPay = 0;
+                return;
+            }
+            taxToPay = 45/100 * (newdis)
+        }
+        console.log(taxVal);
+        
+        setTaxToPay(taxToPay)
     }
-    useEffect(()=> calculateFn(),[])
+    useEffect(()=> calculateFn(),[flag])
     return(
         <div className='container'>
             <nav>
@@ -49,7 +77,7 @@ const HomeComponent = ()=>{
                                 <label htmlFor="">Country</label>
                                 <select name="" id="">
                                     <option value="Australia">Australia</option>
-                                    <option value="India">India</option>
+                                    {/* <option value="India">India</option> */}
                                 </select>
                             </div>
                         </div>
@@ -60,14 +88,14 @@ const HomeComponent = ()=>{
                                 <label htmlFor="">Enter purchase price of Crypto</label>
                                <div> 
                                 <span>$</span>
-                               <input defaultValue={30000} ref={purchaseRef} type="number" />
+                               <input defaultValue={30000} onChange={calculateFn} ref={purchaseRef} type="number" />
                                </div>
                             </div>
                             <div className='sale'>
                                 <label htmlFor="">Enter sale price of Crypto</label>
                                 <div> 
                                 <span>$</span>
-                               <input defaultValue={20000} ref={priceRef} type="number" />
+                               <input defaultValue={20000} onChange={calculateFn} ref={priceRef} type="number" />
                                </div>
                             </div>
                         </div>
@@ -77,19 +105,19 @@ const HomeComponent = ()=>{
                                 <label htmlFor="">Enter your Expenses</label>
                                 <div> 
                                 <span>$</span>
-                               <input ref={expenceRef} defaultValue={5000} type="number" />
+                               <input ref={expenceRef} onChange={calculateFn} defaultValue={5000} type="number" />
                                </div>
                             </div>
                             <div className='type'>
                                 <label htmlFor="">Investment Type</label>
                                 <div className='buttons'>
-                                    <div className='one'>
-                                    <button>Short Term</button>
-                                    <h5> {'< 12 months'}</h5>
+                                    <div className='one' onClick={()=> setFlag(false)} style={{border:!flag ?"2px solid blue" :""}}>
+                                        <button>Short Term</button>
+                                        <h5> {'< 12 months'}</h5>
                                     </div>
-                                    <div className='two'>
-                                    <button>Long Term</button>
-                                    <h5>{'12 months > '}</h5>
+                                    <div className='two' onClick={()=> setFlag(true)} style={{border:flag ?"2px solid blue" :""}}>
+                                        <button>Long Term</button>
+                                        <h5>{'12 months > '}</h5>
                                     </div>
                                 </div>
                             </div>
@@ -98,7 +126,7 @@ const HomeComponent = ()=>{
                         <div className='anual-tax-rate'>
                             <div className='anual'>
                                 <label htmlFor="">Select Your Annual Income</label>
-                                <select name="" id="" ref={annualRef}>
+                                <select name="" id="" defaultValue={'1'} onChange={(e)=> calculateFn(e.target.value)} ref={annualRef}>
                                     <option value="1">$0 - $18,200</option>
                                     <option value="18">$18,201 - $45,000</option>
                                     <option value="45">$45,001 - $120,000</option>
@@ -112,7 +140,7 @@ const HomeComponent = ()=>{
                             </div>
                         </div>
 
-                        <div className='capital-discount'>
+                        { flag  && <div className='capital-discount'>
                             <div className='capital'>
                                 <label htmlFor="">Capital gains amount</label>
                                 <input type="text" disabled value={`$ ${capital}`}/>
@@ -121,7 +149,7 @@ const HomeComponent = ()=>{
                                 <label htmlFor="">Discount for long term gains</label>
                                 <input type="text" disabled value={`$ ${discount}`}/>
                             </div>
-                        </div>
+                        </div>}
 
                         <div className='tax-pay-container'>
                             <div className='capital-gain'>
